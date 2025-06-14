@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FormErrors, TravelAddress } from '../types/formTypes'
 import { travelAddressSectionConfig } from '../config/formConfig'
 import DynamicFormRenderer from './DynamicFormRenderer'
@@ -56,6 +56,11 @@ const TravelAddressesForm: React.FC<TravelAddressesFormProps> = ({
     }
     return errors
   }
+  useEffect(() => {
+    if (addresses.length === 0) {
+      addAddress()
+    }
+  }, [])
 
   const addAddress = () => {
     // Validate the last address if it exists
@@ -256,7 +261,7 @@ const TravelAddressesForm: React.FC<TravelAddressesFormProps> = ({
             </button>
           )}
           {/* Now using DynamicFormRenderer for each address */}
-          <DynamicFormRenderer
+          <DynamicFormRenderer<TravelAddress>
             configKey="travelAddress" // Use a consistent key for the address config
             formData={address}
             errors={

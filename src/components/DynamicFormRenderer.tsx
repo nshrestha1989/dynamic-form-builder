@@ -1,4 +1,5 @@
 import {
+  childrenSectionConfig,
   travelAddressSectionConfig,
   travelFormConfigs
 } from '../config/formConfig'
@@ -7,6 +8,7 @@ import {
   FormSectionConfig,
   TravelRegularDataEntry
 } from '../types/formTypes'
+import ChildrenDetailForm from './ChildrenDetailForm'
 import GenericFieldRenderer from './GenericFieldRenderer'
 import TravelAddressesForm from './TravelAddressForm'
 
@@ -36,9 +38,11 @@ const DynamicFormRenderer = <T extends object = TravelRegularDataEntry>({
 }: DynamicFormRendererProps<T>) => {
   // Determine which config to use based on configKey
   let config: FormSectionConfig<T> | undefined
+
   if (configKey === 'travelAddress') {
     config = travelAddressSectionConfig as FormSectionConfig<T>
-  } else if (configKey === 'travelAddress') {
+  } else if (configKey === 'childrenDetails') {
+    config = childrenSectionConfig as FormSectionConfig<T>
   } else {
     config = travelFormConfigs[configKey] as FormSectionConfig<T>
   }
@@ -117,14 +121,13 @@ const DynamicFormRenderer = <T extends object = TravelRegularDataEntry>({
       <h1 className="text-2xl font-bold mb-4">
         Dynamic Form: {config.sectionTitle || 'Section'}
       </h1>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Render fields directly using GenericFieldRenderer within DynamicFormRenderer */}
-        <GenericFieldRenderer<any, FormErrors> // GenericFieldRenderer should handle the specific data type
+        <GenericFieldRenderer<T, FormErrors> // GenericFieldRenderer should handle the specific data type
           data={formData}
           errors={errors}
-          fieldConfigs={config.fields.filter(
-            (f) => f.component !== 'TravelAddressesForm'
-          )}
+          fieldConfigs={config.fields}
           onFieldChange={updateFormData}
         />
       </div>
@@ -133,44 +136,36 @@ const DynamicFormRenderer = <T extends object = TravelRegularDataEntry>({
       {config.nestedSections?.find(
         (field) => field.component === 'TravelAddressesForm'
       ) && (
-        <TravelAddressesForm
-          addresses={(formData as TravelRegularDataEntry).travelAddress || []}
-          onChange={(updatedAddresses) =>
-            updateFormData('travelAddress' as keyof any, updatedAddresses)
-          }
-          formErrors={errors}
-          setFormErrors={onErrorsChange}
-        />
+        <>
+          <TravelAddressesForm
+            addresses={(formData as TravelRegularDataEntry).travelAddress || []}
+            onChange={(updatedAddresses) =>
+              updateFormData('travelAddress' as keyof any, updatedAddresses)
+            }
+            formErrors={errors}
+            setFormErrors={onErrorsChange}
+          />
+        </>
       )}
       {config.nestedSections?.find(
         (field) =>
           field.component === 'ChildrenDetailForm' &&
-          field.condition?.(formData)
+          typeof field.condition === 'function' &&
+          field.condition(formData)
       ) && (
-        <TravelAddressesForm
-          addresses={(formData as TravelRegularDataEntry).travelAddress || []}
-          onChange={(updatedAddresses) =>
-            updateFormData('travelAddress' as keyof any, updatedAddresses)
-          }
-          formErrors={errors}
-          setFormErrors={onErrorsChange}
-        />
+        <>
+          <ChildrenDetailForm
+            children={
+              (formData as TravelRegularDataEntry).childrenDetails || []
+            }
+            onChange={(updatedAddresses) =>
+              updateFormData('childrenDetails' as keyof any, updatedAddresses)
+            }
+            formErrors={errors}
+            setFormErrors={onErrorsChange}
+          />
+        </>
       )}
-      <pre
-        style={{
-          backgroundColor: '#eee',
-          padding: '10px',
-          borderRadius: '5px',
-          marginTop: '20px',
-          overflowX: 'auto',
-          fontSize: '0.8em'
-        }}
-      >
-        <h2>Current Form Data:</h2>
-        {JSON.stringify(formData, null, 2)}
-        <h2>Current Errors:</h2>
-        {JSON.stringify(errors, null, 2)}
-      </pre>
     </div>
   )
 }

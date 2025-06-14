@@ -8,7 +8,11 @@ export interface TravelAddress {
   startDate: Date | null
   endDate: Date | null
 }
-
+export interface Child {
+  name: string
+  age: number | ''
+  // Add other child-specific fields here if needed
+}
 export interface TravelRegularDataEntry {
   purpose: string
   hasChildren: 'yes' | 'no'
@@ -16,6 +20,7 @@ export interface TravelRegularDataEntry {
   additionalInformation?: string
   uploadItinerary?: File | null
   travelAddress: TravelAddress[] // Array of addresses
+  childrenDetails?: Child[] // Array of children
 }
 
 // FormErrors can be a string for a top-level field or an object for nested errors (like addresses)

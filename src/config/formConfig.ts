@@ -1,4 +1,5 @@
 import {
+  Child,
   FormSectionConfig,
   TravelAddress,
   TravelRegularDataEntry
@@ -57,7 +58,7 @@ export const travelFormConfigs: { [key: string]: FormSectionConfig } = {
           data.primaryTransportationType === 'car'
       },
       {
-        id: 'children',
+        id: 'childrenDetails',
         label: 'Child Details',
         type: 'group',
         component: 'ChildrenDetailForm',
@@ -110,23 +111,22 @@ export const travelAddressSectionConfig: FormSectionConfig<TravelAddress> = {
     }
   ]
 }
-export const childrenSectionConfig: FormSectionConfig<TravelAddress> = {
+export const childrenSectionConfig: FormSectionConfig<Child> = {
   sectionTitle: 'Child Details',
   fields: [
     {
-      id: 'address',
-      label: 'Address Line',
+      id: 'name',
+      label: 'Name',
       type: 'text',
-      required: true,
-      placeholder: 'Street Address'
+      required: false,
+      placeholder: 'Name'
     },
-    { id: 'startDate', label: 'Start Date', type: 'date', required: true },
     {
-      id: 'endDate',
-      label: 'End Date',
-      type: 'date',
-      required: true,
-      condition: (data: TravelAddress) => !!data.startDate // End date only required if start date exists
+      id: 'age',
+      label: 'Age',
+      type: 'number',
+      required: false,
+      placeholder: 'Age'
     }
   ]
 }
