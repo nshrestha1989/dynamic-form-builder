@@ -43,7 +43,7 @@ export interface FormFieldConfig<T = any> {
   options?: Array<{ value: string; label: string }>
   required?: boolean | ((data: T) => boolean) // Required can depend on the generic type T
   condition?: (data: T) => boolean // Condition can depend on the generic type T
-  component?: 'TravelAddressesForm' // Special component rendering for complex fields
+  component?: 'TravelAddressesForm' | 'ChildrenDetailForm' | undefined // Special component rendering for complex fields
   placeholder?: string
 }
 
@@ -52,7 +52,5 @@ export interface FormSectionConfig<T = TravelRegularDataEntry> {
   // Default to TravelRegularDataEntry
   sectionTitle?: string
   fields: FormFieldConfig<T>[]
+  nestedSections?: FormFieldConfig<T>[]
 }
-
-// --- src/config/formConfigs.ts ---
-// Configuration for various dynamic forms.

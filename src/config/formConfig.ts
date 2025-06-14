@@ -45,14 +45,24 @@ export const travelFormConfigs: { [key: string]: FormSectionConfig } = {
           data.primaryTransportationType === 'plane', // Explicitly typed 'data'
         placeholder: 'Any specific flight details?'
       },
-      { id: 'uploadItinerary', label: 'Upload Itinerary', type: 'file' },
+      { id: 'uploadItinerary', label: 'Upload Itinerary', type: 'file' }
+    ],
+    nestedSections: [
       {
         id: 'travelAddress',
         label: 'Travel Addresses',
         type: 'group',
         component: 'TravelAddressesForm',
         required: (data: TravelRegularDataEntry) =>
-          data.primaryTransportationType === 'car' // Example conditional requirement
+          data.primaryTransportationType === 'car'
+      },
+      {
+        id: 'children',
+        label: 'Child Details',
+        type: 'group',
+        component: 'ChildrenDetailForm',
+        condition: (data: TravelRegularDataEntry) =>
+          data.hasChildren.toLowerCase() === 'yes'
       }
     ]
   }
@@ -89,6 +99,26 @@ export const travelAddressSectionConfig: FormSectionConfig<TravelAddress> = {
       type: 'text',
       required: true,
       placeholder: 'Postcode'
+    },
+    { id: 'startDate', label: 'Start Date', type: 'date', required: true },
+    {
+      id: 'endDate',
+      label: 'End Date',
+      type: 'date',
+      required: true,
+      condition: (data: TravelAddress) => !!data.startDate // End date only required if start date exists
+    }
+  ]
+}
+export const childrenSectionConfig: FormSectionConfig<TravelAddress> = {
+  sectionTitle: 'Child Details',
+  fields: [
+    {
+      id: 'address',
+      label: 'Address Line',
+      type: 'text',
+      required: true,
+      placeholder: 'Street Address'
     },
     { id: 'startDate', label: 'Start Date', type: 'date', required: true },
     {

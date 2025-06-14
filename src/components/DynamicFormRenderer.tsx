@@ -23,24 +23,24 @@ interface DynamicFormRendererProps<T extends object = TravelRegularDataEntry> {
   onChangeAddress?: (formId: number) => (addressId: number, data: any) => void
 }
 
-const DynamicFormRenderer: React.FC<DynamicFormRendererProps<any>> = ({
-  // Use 'any' for the component itself to be flexible
+const DynamicFormRenderer = <T extends object = TravelRegularDataEntry>({
   configKey,
   formData,
   errors,
   onFormChange,
   onErrorsChange,
   formId,
-  onAddAddress, // Destructure optional props
+  onAddAddress,
   onRemoveAddress,
   onChangeAddress
-}) => {
+}: DynamicFormRendererProps<T>) => {
   // Determine which config to use based on configKey
-  let config: FormSectionConfig<any> | undefined // Make config generic
+  let config: FormSectionConfig<T> | undefined
   if (configKey === 'travelAddress') {
-    config = travelAddressSectionConfig // Use the specific address config
+    config = travelAddressSectionConfig as FormSectionConfig<T>
+  } else if (configKey === 'travelAddress') {
   } else {
-    config = travelFormConfigs[configKey]
+    config = travelFormConfigs[configKey] as FormSectionConfig<T>
   }
 
   if (!config) {
@@ -130,7 +130,7 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps<any>> = ({
       </div>
 
       {/* Conditionally render TravelAddressesForm if it's part of this config */}
-      {config.fields.find(
+      {config.nestedSections?.find(
         (field) => field.component === 'TravelAddressesForm'
       ) && (
         <TravelAddressesForm
@@ -142,6 +142,35 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps<any>> = ({
           setFormErrors={onErrorsChange}
         />
       )}
+      {config.nestedSections?.find(
+        (field) =>
+          field.component === 'ChildrenDetailForm' &&
+          field.condition?.(formData)
+      ) && (
+        <TravelAddressesForm
+          addresses={(formData as TravelRegularDataEntry).travelAddress || []}
+          onChange={(updatedAddresses) =>
+            updateFormData('travelAddress' as keyof any, updatedAddresses)
+          }
+          formErrors={errors}
+          setFormErrors={onErrorsChange}
+        />
+      )}
+      <pre
+        style={{
+          backgroundColor: '#eee',
+          padding: '10px',
+          borderRadius: '5px',
+          marginTop: '20px',
+          overflowX: 'auto',
+          fontSize: '0.8em'
+        }}
+      >
+        <h2>Current Form Data:</h2>
+        {JSON.stringify(formData, null, 2)}
+        <h2>Current Errors:</h2>
+        {JSON.stringify(errors, null, 2)}
+      </pre>
     </div>
   )
 }
