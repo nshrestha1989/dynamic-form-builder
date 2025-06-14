@@ -1,41 +1,66 @@
-# vite React TypeScript tailwindcss starter
+# Vite React TypeScript Tailwind Starter
 
-Template for vite, React + tailwindcss + TypeScript projects with some tools preconfigured.
+A starter project using Vite, React, TypeScript, and Tailwind CSS, featuring a dynamic travel form example.
 
-## About
+## Features
 
-Template for vite, React + tailwindcss + TypeScript projects with some tools preconfigured.
+- ⚡ Fast Vite development environment
+- 🎨 Tailwind CSS for styling
+- 📝 Dynamic, configurable forms
+- 🛡️ TypeScript type safety
+- 🧩 Modular React components
 
-![Screenshot](assets/screenshot.png)
+## Getting Started
 
-### Libraries
+### Prerequisites
 
-- [React 18](https://reactjs.org/)
-- [React Router 6](https://reactrouter.com)
-- [tailwindcss 3](https://tailwindcss.com/)
-  - [tailwindcss forms plugin](https://tailwindcss-forms.vercel.app/)
-- [TypeScript 4.9.5](https://www.typescriptlang.org/)
-- [vite 4](https://vitejs.dev/)
-- [vitetest](https://vitest.dev/)
+- Node.js (v16+ recommended)
+- npm
 
-### Tools
+### Installation
 
-- [commitlint 17](https://commitlint.js.org)
-- [Conventional Commits 1](https://www.conventionalcommits.org)
-- [editorconfig](https://editorconfig.org/)
-- [eslint 8](https://eslint.org/)
-- [husky 8](https://typicode.github.io/husky/#/)
-- [Prettier 2](https://prettier.io/)
-- [VS Code settings](https://code.visualstudio.com/)
-
-## Usage
-
-Create a new project from this template by clicking the "Use this template" button:
-
-![](assets/template-usage.png)
-
-```bash
-yarn
-yarn dev
-yarn test
+```sh
+npm install
 ```
+
+### Development
+
+```sh
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### Build
+
+```sh
+npm run build
+```
+
+### Lint
+
+```sh
+npm run lint
+```
+
+### Test
+
+```sh
+npm run test
+```
+
+## Project Structure
+
+- `src/` - Source code
+  - `components/` - Form and UI components
+  - `config/` - Form configuration
+  - `types/` - TypeScript types
+- `docs/` - Documentation
+
+## Documentation
+
+See [docs/overview.md](docs/overview.md) for more details.
+
+## License
+
+MIT
