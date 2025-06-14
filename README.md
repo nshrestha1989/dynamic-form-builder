@@ -59,7 +59,7 @@ npm run test
 
 ## Documentation
 
-See [/overview.md](docs/overview.md) for more details.
+See [/overview.md](/overview.md) for more details.
 
 ## License
 

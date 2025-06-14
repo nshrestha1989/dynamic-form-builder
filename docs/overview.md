@@ -4,9 +4,9 @@ This project is a Vite + React + TypeScript + Tailwind CSS starter with a dynami
 
 ## Features
 
-- Dynamic form rendering based on configuration ([src/config/formConfig.ts](src/config/formConfig.ts))
-- Modular form components ([src/components/](src/components/))
-- TypeScript types for form data ([src/types/formTypes.ts](src/types/formTypes.ts))
+- Dynamic form rendering based on configuration ([src/config/formConfig.ts](./src/config/formConfig.ts))
+- Modular form components ([src/components/](./src/components/))
+- TypeScript types for form data ([src/types/formTypes.ts](./src/types/formTypes.ts.ts))
 - Tailwind CSS styling
 
 ## Folder Structure
