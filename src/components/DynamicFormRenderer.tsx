@@ -145,6 +145,21 @@ const DynamicFormRenderer = <T extends object = TravelRegularDataEntry>({
             formErrors={errors}
             setFormErrors={onErrorsChange}
           />
+          <pre
+            style={{
+              backgroundColor: '#eee',
+              padding: '10px',
+              borderRadius: '5px',
+              marginTop: '20px',
+              overflowX: 'auto',
+              fontSize: '0.8em'
+            }}
+          >
+            <h2>Current Form Data:</h2>
+            {JSON.stringify(formData, null, 2)}
+            <h2>Current Errors:</h2>
+            {JSON.stringify(errors, null, 2)}
+          </pre>
         </>
       )}
       {config.nestedSections?.find(
