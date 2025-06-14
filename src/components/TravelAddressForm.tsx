@@ -1,5 +1,6 @@
 import exp from 'constants'
 import { FormErrors, TravelAddress } from '../types/formTypes'
+import { useState } from 'react'
 
 interface TravelAddressesFormProps {
   addresses: TravelAddress[]
@@ -14,7 +15,69 @@ const TravelAddressesForm: React.FC<TravelAddressesFormProps> = ({
   formErrors,
   setFormErrors
 }) => {
+  const [localAlertDialog, setLocalAlertDialog] = useState({
+    show: false,
+    title: '',
+    description: ''
+  })
+
+  const validateSingleAddress = (
+    address: TravelAddress
+  ): { [key: string]: string } => {
+    const errors: { [key: string]: string } = {}
+    const requiredAddressFields = [
+      'address',
+      'suburb',
+      'state',
+      'postcode',
+      'startDate',
+      'endDate'
+    ]
+
+    requiredAddressFields.forEach((field) => {
+      const value = address[field as keyof typeof address]
+      if (!value) {
+        errors[field] = `${field} is required`
+      }
+    })
+
+    if (address.startDate && address.endDate) {
+      const startDate = new Date(address.startDate)
+      const endDate = new Date(address.endDate)
+      if (startDate > endDate) {
+        errors.endDate = 'End Date cannot be before Start Date'
+      }
+    }
+    return errors
+  }
   const addAddress = () => {
+    // Validate the last address if it exists
+    if (addresses.length > 0) {
+      const lastAddress = addresses[addresses.length - 1]
+      const lastAddressErrors = validateSingleAddress(lastAddress)
+
+      if (Object.keys(lastAddressErrors).length > 0) {
+        // Update the formErrors state with errors for the last address
+        setFormErrors((prevErrors) => ({
+          ...prevErrors,
+          addresses: {
+            ...((prevErrors.addresses || {}) as {
+              [key: number]: { [key: string]: string }
+            }),
+            [addresses.length - 1]: lastAddressErrors
+          }
+        }))
+        setLocalAlertDialog({
+          show: true,
+          title: 'Validation Error',
+          description:
+            'Please complete the current address details before adding a new one.'
+        })
+        return // Prevent adding new address if current one is invalid
+      }
+    }
+
+    // If no addresses or the last address is valid, add a new empty address object
     const newAddress: TravelAddress = {
       address: '',
       suburb: '',
@@ -24,6 +87,8 @@ const TravelAddressesForm: React.FC<TravelAddressesFormProps> = ({
       endDate: null
     }
     onChange([...addresses, newAddress])
+    // Clear any local alert if it was showing
+    setLocalAlertDialog({ show: false, title: '', description: '' })
   }
 
   const removeAddress = (indexToRemove: number) => {
