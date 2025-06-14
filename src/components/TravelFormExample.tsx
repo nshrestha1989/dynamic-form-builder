@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import { FormErrors, TravelRegularDataEntry } from '../types/formTypes'
+import {
+  FormErrors,
+  FormFieldConfig,
+  TravelAddress,
+  TravelRegularDataEntry
+} from '../types/formTypes'
+import {
+  travelAddressSectionConfig,
+  travelFormConfigs
+} from '../config/formConfig'
 import DynamicFormRenderer from './DynamicFormRenderer'
-import { travelFormConfigs } from '../config/formConfig'
 
 export const TravelFormExample: React.FC = () => {
   const [forms, setForms] = useState<{
@@ -45,55 +53,67 @@ export const TravelFormExample: React.FC = () => {
   }
 
   // Centralized update function for errors for a specific formId
-  const handleErrorsChange = (
-    formId: number,
-    updatedErrors: FormErrors | ((prevErrors: FormErrors) => FormErrors)
-  ) => {
+  // This now accepts the fully updated errors object directly
+  const handleErrorsChange = (formId: number, updatedErrors: FormErrors) => {
     setForms((prev) => ({
       ...prev,
       [formId]: {
         ...prev[formId],
-        errors:
-          typeof updatedErrors === 'function'
-            ? updatedErrors(prev[formId].errors)
-            : updatedErrors
+        errors: updatedErrors
       }
     }))
   }
 
   // Enhanced validateEntireForm to properly validate nested addresses
-  const validateEntireForm = (formId: number) => {
+  const validateEntireForm = (formId: number): boolean => {
+    // Explicitly define return type
     const currentForm = forms[formId]
     let isValid = true
     const newErrors: FormErrors = {} // Start with a fresh error object for this validation pass
 
     // Validate main form fields
-    const currentConfig = travelFormConfigs.IntrastateTemporaryDetails // Assuming a single config for this example
+    const currentConfig = travelFormConfigs.IntrastateTemporaryDetails
     if (currentConfig) {
-      currentConfig.fields.forEach((field) => {
-        // Only validate fields that are visible/applicable based on their condition
-        if (
-          typeof field.condition === 'function' &&
-          !field.condition(currentForm.formData)
-        ) {
-          return // Skip validation for hidden fields
-        }
+      currentConfig.fields.forEach(
+        (field: FormFieldConfig<TravelRegularDataEntry>) => {
+          // Explicitly typed 'field'
+          // Only validate fields that are visible/applicable based on their condition
+          if (
+            field.component !== 'TravelAddressesForm' &&
+            field.condition &&
+            !field.condition(currentForm.formData)
+          ) {
+            return // Skip validation for hidden fields (non-address fields)
+          }
 
-        const fieldValue =
-          currentForm.formData[field.id as keyof TravelRegularDataEntry]
-        const isRequired =
-          typeof field.required === 'function'
-            ? field.required(currentForm.formData)
-            : field.required
+          const fieldValue =
+            currentForm.formData[field.id as keyof TravelRegularDataEntry]
+          const isRequired =
+            typeof field.required === 'function'
+              ? field.required(currentForm.formData)
+              : field.required
 
-        if (
-          isRequired &&
-          (fieldValue === null || fieldValue === '' || fieldValue === undefined)
-        ) {
-          newErrors[field.id] = `${field.label} is required`
-          isValid = false
+          if (
+            isRequired &&
+            (fieldValue === null ||
+              fieldValue === '' ||
+              fieldValue === undefined)
+          ) {
+            // Special handling for travelAddress field itself being required but empty
+            if (
+              field.id === 'travelAddress' &&
+              (fieldValue as unknown as TravelAddress[]).length === 0
+            ) {
+              newErrors[field.id] = `${field.label} is required`
+              isValid = false
+            } else if (field.id !== 'travelAddress') {
+              // Apply for non-address fields
+              newErrors[field.id] = `${field.label} is required`
+              isValid = false
+            }
+          }
         }
-      })
+      )
     }
 
     // Enhanced validation for travel addresses
@@ -103,35 +123,40 @@ export const TravelFormExample: React.FC = () => {
     if (
       addresses.length === 0 &&
       (() => {
-        const requiredProp = currentConfig?.fields.find(
-          (f: { id: string }) => f.id === 'travelAddress'
-        )?.required
-        if (typeof requiredProp === 'function') {
-          return requiredProp(currentForm.formData)
+        const travelAddressField = currentConfig?.fields.find(
+          (f: FormFieldConfig) => f.id === 'travelAddress'
+        )
+        if (typeof travelAddressField?.required === 'function') {
+          return travelAddressField.required(currentForm.formData)
         }
-        return !!requiredProp
+        return !!travelAddressField?.required
       })()
     ) {
       newErrors.travelAddress = 'At least one travel address is required'
       isValid = false
     } else {
-      addresses.forEach((address, index) => {
+      addresses.forEach((address: TravelAddress, index: number) => {
+        // Explicitly typed
         const currentAddressErrors: { [key: string]: string } = {}
-        const requiredAddressFields = [
-          'address',
-          'suburb',
-          'state',
-          'postcode',
-          'startDate',
-          'endDate'
-        ]
-        requiredAddressFields.forEach((field) => {
-          const value = address[field as keyof typeof address]
-          if (!value) {
-            currentAddressErrors[field] = `${field} is required`
+        travelAddressSectionConfig.fields.forEach((fieldConfig) => {
+          // Use the shared config for address fields
+          const fieldId = fieldConfig.id as keyof TravelAddress
+          const value = address[fieldId]
+
+          const isRequired =
+            typeof fieldConfig.required === 'function'
+              ? fieldConfig.required(address) // Pass the current address for conditional required
+              : fieldConfig.required
+
+          if (
+            isRequired &&
+            (value === null || value === '' || value === undefined)
+          ) {
+            currentAddressErrors[fieldId] = `${fieldConfig.label} is required`
             isValid = false
           }
         })
+
         if (address.startDate && address.endDate) {
           const startDate = new Date(address.startDate)
           const endDate = new Date(address.endDate)
@@ -296,31 +321,37 @@ export const TravelFormExample: React.FC = () => {
       }
     })
     // Also clear errors associated with the removed address
-    handleErrorsChange(formId, (prevErrors) => {
-      const newErrors = { ...prevErrors }
-      if (newErrors.addresses) {
-        const currentAddressErrors = newErrors.addresses as {
-          [key: number]: { [key: string]: string }
-        }
-        delete currentAddressErrors[addressId]
-        // Re-index subsequent errors if any
-        const reIndexedErrors: { [key: number]: { [key: string]: string } } = {}
-        Object.keys(currentAddressErrors).forEach((key) => {
-          const numKey = Number(key)
-          if (numKey > addressId) {
-            reIndexedErrors[numKey - 1] = currentAddressErrors[numKey]
-          } else {
-            reIndexedErrors[numKey] = currentAddressErrors[numKey]
+    handleErrorsChange(
+      formId,
+      (() => {
+        // Pass a function to handleErrorsChange, it will be executed inside
+        const prevErrors = forms[formId].errors // Get the latest errors for the form
+        const newErrors = { ...prevErrors }
+        if (newErrors.addresses) {
+          const currentAddressErrors = newErrors.addresses as {
+            [key: number]: { [key: string]: string }
           }
-        })
-        if (Object.keys(reIndexedErrors).length > 0) {
-          newErrors.addresses = reIndexedErrors
-        } else {
-          delete newErrors.addresses
+          delete currentAddressErrors[addressId]
+          // Re-index subsequent errors if any
+          const reIndexedErrors: { [key: number]: { [key: string]: string } } =
+            {}
+          Object.keys(currentAddressErrors).forEach((key) => {
+            const numKey = Number(key)
+            if (numKey > addressId) {
+              reIndexedErrors[numKey - 1] = currentAddressErrors[numKey]
+            } else {
+              reIndexedErrors[numKey] = currentAddressErrors[numKey]
+            }
+          })
+          if (Object.keys(reIndexedErrors).length > 0) {
+            newErrors.addresses = reIndexedErrors
+          } else {
+            delete newErrors.addresses
+          }
         }
-      }
-      return newErrors
-    })
+        return newErrors
+      })()
+    ) // Immediately invoke the function to pass the result
   }
 
   const onChangeAddress =
@@ -372,9 +403,14 @@ export const TravelFormExample: React.FC = () => {
             onFormChange={(updatedData) =>
               handleFormChange(formId, updatedData)
             }
-            onErrorsChange={(updatedErrors) =>
-              handleErrorsChange(formId, updatedErrors)
-            }
+            onErrorsChange={(updatedErrors) => {
+              // If updatedErrors is a function (from a child), call it with the current errors
+              if (typeof updatedErrors === 'function') {
+                handleErrorsChange(formId, updatedErrors(forms[formId].errors))
+              } else {
+                handleErrorsChange(formId, updatedErrors)
+              }
+            }}
             formId={formId}
           />
           {/* A local submit button for each form if desired, or rely on global "Submit All" */}
@@ -454,6 +490,7 @@ export const TravelFormExample: React.FC = () => {
     </div>
   )
 }
+
 // Update styles
 const styles = `
   .travel-form-container {

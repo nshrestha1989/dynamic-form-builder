@@ -1,8 +1,9 @@
-// --- src/config/formConfigs.ts ---
+import {
+  FormSectionConfig,
+  TravelAddress,
+  TravelRegularDataEntry
+} from '../types/formTypes'
 
-import { FormSectionConfig } from '../types/formTypes'
-
-// Configuration for various dynamic forms.
 export const travelFormConfigs: { [key: string]: FormSectionConfig } = {
   IntrastateTemporaryDetails: {
     sectionTitle: 'Intrastate Travel Details',
@@ -40,7 +41,8 @@ export const travelFormConfigs: { [key: string]: FormSectionConfig } = {
         id: 'additionalInformation',
         label: 'Additional Information',
         type: 'textarea',
-        condition: (data) => data.primaryTransportationType === 'plane',
+        condition: (data: TravelRegularDataEntry) =>
+          data.primaryTransportationType === 'plane', // Explicitly typed 'data'
         placeholder: 'Any specific flight details?'
       },
       { id: 'uploadItinerary', label: 'Upload Itinerary', type: 'file' },
@@ -49,8 +51,52 @@ export const travelFormConfigs: { [key: string]: FormSectionConfig } = {
         label: 'Travel Addresses',
         type: 'group',
         component: 'TravelAddressesForm',
-        required: (data) => data.primaryTransportationType === 'car' // Example conditional requirement
+        required: (data: TravelRegularDataEntry) =>
+          data.primaryTransportationType === 'car' // Example conditional requirement
       }
     ]
   }
+}
+
+// Defining a specific FormSectionConfig for a single TravelAddress object
+export const travelAddressSectionConfig: FormSectionConfig<TravelAddress> = {
+  sectionTitle: 'Address Details', // Can be customized
+  fields: [
+    {
+      id: 'address',
+      label: 'Address Line',
+      type: 'text',
+      required: true,
+      placeholder: 'Street Address'
+    },
+    {
+      id: 'suburb',
+      label: 'Suburb',
+      type: 'text',
+      required: true,
+      placeholder: 'Suburb'
+    },
+    {
+      id: 'state',
+      label: 'State',
+      type: 'text',
+      required: true,
+      placeholder: 'State'
+    },
+    {
+      id: 'postcode',
+      label: 'Postcode',
+      type: 'text',
+      required: true,
+      placeholder: 'Postcode'
+    },
+    { id: 'startDate', label: 'Start Date', type: 'date', required: true },
+    {
+      id: 'endDate',
+      label: 'End Date',
+      type: 'date',
+      required: true,
+      condition: (data: TravelAddress) => !!data.startDate // End date only required if start date exists
+    }
+  ]
 }

@@ -26,8 +26,10 @@ export interface FormErrors {
     | undefined
 }
 
-export interface FormFieldConfig {
-  id: keyof TravelRegularDataEntry | string // 'string' allows for sub-fields like address.1.suburb
+// Updated FormFieldConfig to be generic
+export interface FormFieldConfig<T = any> {
+  // Default to 'any' if T is not specified
+  id: keyof T | string // Can be a key of the generic type T or a simple string
   label: string
   type:
     | 'text'
@@ -39,13 +41,18 @@ export interface FormFieldConfig {
     | 'date'
     | 'group'
   options?: Array<{ value: string; label: string }>
-  required?: boolean | ((data: TravelRegularDataEntry) => boolean)
-  condition?: (data: TravelRegularDataEntry) => boolean
+  required?: boolean | ((data: T) => boolean) // Required can depend on the generic type T
+  condition?: (data: T) => boolean // Condition can depend on the generic type T
   component?: 'TravelAddressesForm' // Special component rendering for complex fields
   placeholder?: string
 }
 
-export interface FormSectionConfig {
+// Updated FormSectionConfig to be generic
+export interface FormSectionConfig<T = TravelRegularDataEntry> {
+  // Default to TravelRegularDataEntry
   sectionTitle?: string
-  fields: FormFieldConfig[]
+  fields: FormFieldConfig<T>[]
 }
+
+// --- src/config/formConfigs.ts ---
+// Configuration for various dynamic forms.
